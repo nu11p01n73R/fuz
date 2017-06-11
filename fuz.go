@@ -12,6 +12,16 @@ import (
 const SEARCH = 0
 const NORMAL = 1
 
+// Event Type
+const (
+	NOP       = iota
+	UPWARD    = iota
+	DONWARD   = iota
+	TOGGLE    = iota
+	OPEN      = iota
+	BACKSPACE = iota
+)
+
 // Walks the directory.
 // Removes the prefix of current working dir,
 // for more clear path strings
@@ -115,6 +125,30 @@ func filterFiles(files []string, searchString string) []string {
 	return output
 }
 
+func keyHandler(key byte, mode int) int {
+	switch key {
+	case 27:
+		return TOGGLE
+	case 10:
+		return OPEN
+	}
+
+	if mode == NORMAL {
+		switch key {
+		case 106:
+			return DONWARD
+		case 107:
+			return UPWARD
+		}
+	}
+
+	if mode == SEARCH && key == 127 {
+		return BACKSPACE
+	}
+
+	return NOP
+}
+
 func viewPort(files []string) error {
 	var err error
 	var searchString string
@@ -122,7 +156,7 @@ func viewPort(files []string) error {
 
 	size := len(files)
 	cursorAt := size - 1
-	mode := NORMAL
+	mode := SEARCH
 	initialList := files
 
 	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
@@ -132,18 +166,18 @@ func viewPort(files []string) error {
 userInput:
 	for {
 		//		clearScreen()
-		printList(files, cursorAt, searchString)
+		//printList(files, cursorAt, searchString)
 
 		os.Stdin.Read(char)
+
+		event := keyHandler(char[0], mode)
+		fmt.Println(event)
+		continue
 
 		fmt.Println("press", char)
 		if char[0] == 27 {
 			mode = toggleMode(mode)
 			continue
-		}
-		if char[0] == 127 {
-			searchString = searchString[:len(searchString)-1]
-			files = initialList
 		}
 
 		if mode == NORMAL {
@@ -152,7 +186,12 @@ userInput:
 				break userInput
 			}
 		} else {
-			searchString += string(char)
+			if char[0] == 127 {
+				searchString = searchString[:len(searchString)-2]
+				files = initialList
+			} else {
+				searchString += string(char)
+			}
 			files = filterFiles(files, searchString)
 			size = len(files)
 			cursorAt = size - 1
