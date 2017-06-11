@@ -39,12 +39,12 @@ func intialWalk(dir string) ([]string, error) {
 
 func printList(files []string, cursorAt int, searchString string) {
 	fmt.Println()
-	for i, file := range files {
+	for i := 0; i < 10 && i < len(files); i++ {
 		cursor := " "
 		if cursorAt == i {
 			cursor = ">"
 		}
-		fmt.Printf("%s %s\n", cursor, file)
+		fmt.Printf("%s %s\n", cursor, files[i])
 	}
 	fmt.Printf(">> %s", searchString)
 }
@@ -125,6 +125,15 @@ func filterFiles(files []string, searchString string) []string {
 	return output
 }
 
+// Determins the event for key press by the user.
+// The type of event depends upon the current mode.
+// Some event like TOGGLE and OPEN doesn't depend on
+// the mode.
+// Params
+//	key 	byte 	The key pressed by the user
+//	mode	int	The current mode fuz is on.
+// Return
+//	int	The even identified based on key
 func keyHandler(key byte, mode int) int {
 	switch key {
 	case 27:
@@ -149,56 +158,56 @@ func keyHandler(key byte, mode int) int {
 	return NOP
 }
 
-func viewPort(files []string) error {
-	var err error
-	var searchString string
-	var done bool
-
+// Get the size of the view port.
+// This determins the total number of
+// files to be shown by default.
+// At max fuz shows the first 10 files
+// in the list.
+// Params
+//	files []string Files to be displayed
+// Return
+//	int	Number of files in viewport
+//	int	Position of the cursor initailly
+func getViewPortSize(files []string) (int, int) {
 	size := len(files)
-	cursorAt := size - 1
-	mode := SEARCH
-	initialList := files
+	if size > 10 {
+		return 10, 9
+	}
+	return size, size - 1
+}
+
+func viewPort(files []string) error {
+	var searchString string
+
+	viewPortSize, cursorAt := getViewPortSize(files)
+	mode := NORMAL
 
 	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
 
 	char := make([]byte, 1)
-userInput:
 	for {
-		//		clearScreen()
-		//printList(files, cursorAt, searchString)
+		clearScreen()
+		printList(files, cursorAt, searchString)
 
 		os.Stdin.Read(char)
 
 		event := keyHandler(char[0], mode)
-		fmt.Println(event)
-		continue
 
-		fmt.Println("press", char)
-		if char[0] == 27 {
-			mode = toggleMode(mode)
-			continue
-		}
-
-		if mode == NORMAL {
-			done, err = normalMode(string(char), files, size, &cursorAt)
-			if done {
-				break userInput
-			}
-		} else {
-			if char[0] == 127 {
-				searchString = searchString[:len(searchString)-2]
-				files = initialList
+		switch event {
+		case UPWARD:
+			if cursorAt == 0 {
+				cursorAt = viewPortSize - 1
 			} else {
-				searchString += string(char)
+				cursorAt--
 			}
-			files = filterFiles(files, searchString)
-			size = len(files)
-			cursorAt = size - 1
+			break
+		case DONWARD:
+			cursorAt = (cursorAt + 1) % viewPortSize
 		}
 
 	}
-	return err
+	return nil
 }
 
 func cleanUp() {
