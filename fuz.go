@@ -178,6 +178,7 @@ func getViewPortSize(files []string) (int, int) {
 
 func viewPort(files []string) error {
 	var searchString string
+	var err error
 
 	viewPortSize, cursorAt := getViewPortSize(files)
 	mode := NORMAL
@@ -186,6 +187,8 @@ func viewPort(files []string) error {
 	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
 
 	char := make([]byte, 1)
+
+keyWait:
 	for {
 		clearScreen()
 		printList(files, cursorAt, searchString)
@@ -204,14 +207,22 @@ func viewPort(files []string) error {
 			break
 		case DONWARD:
 			cursorAt = (cursorAt + 1) % viewPortSize
+			break
+		case TOGGLE:
+			mode = toggleMode(mode)
+			break
+		case OPEN:
+			err = openEditor(files[cursorAt])
+			break keyWait
 		}
 
 	}
-	return nil
+	return err
 }
 
 func cleanUp() {
 	exec.Command("stty", "-F", "/dev/tty", "echo").Run()
+	fmt.Println()
 }
 
 // Handles any errors
