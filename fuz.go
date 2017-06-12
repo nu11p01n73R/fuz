@@ -9,8 +9,11 @@ import (
 	"strings"
 )
 
-const SEARCH = 0
-const NORMAL = 1
+// Fuz Modes
+const (
+	SEARCH = iota
+	NORMAL = iota
+)
 
 // Event Type
 const (
@@ -21,6 +24,8 @@ const (
 	OPEN      = iota
 	BACKSPACE = iota
 )
+
+const MAX_VIEWPORT_SIZE = 20
 
 // Walks the directory.
 // Removes the prefix of current working dir,
@@ -39,7 +44,7 @@ func intialWalk(dir string) ([]string, error) {
 
 func printList(files []string, cursorAt int, searchString string) {
 	fmt.Println()
-	for i := 0; i < 10 && i < len(files); i++ {
+	for i := 0; i < MAX_VIEWPORT_SIZE && i < len(files); i++ {
 		cursor := " "
 		if cursorAt == i {
 			cursor = ">"
@@ -170,8 +175,8 @@ func keyHandler(key byte, mode int) int {
 //	int	Position of the cursor initailly
 func getViewPortSize(files []string) (int, int) {
 	size := len(files)
-	if size > 10 {
-		return 10, 9
+	if size > MAX_VIEWPORT_SIZE {
+		return MAX_VIEWPORT_SIZE, MAX_VIEWPORT_SIZE - 1
 	}
 	return size, size - 1
 }
@@ -181,7 +186,9 @@ func viewPort(files []string) error {
 	var err error
 
 	viewPortSize, cursorAt := getViewPortSize(files)
-	mode := NORMAL
+	fileCount := len(files)
+	mode := SEARCH
+	allFiles := files
 
 	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
@@ -212,8 +219,22 @@ keyWait:
 			mode = toggleMode(mode)
 			break
 		case OPEN:
-			err = openEditor(files[cursorAt])
-			break keyWait
+			if cursorAt < fileCount {
+				err = openEditor(files[cursorAt])
+				break keyWait
+			}
+		case SEARCH:
+			searchString += string(char)
+			files = filterFiles(files, searchString)
+			viewPortSize, cursorAt = getViewPortSize(files)
+			fileCount = len(files)
+		case BACKSPACE:
+			if len(searchString) > 0 {
+				searchString = searchString[:len(searchString)-1]
+				files = filterFiles(allFiles, searchString)
+				viewPortSize, cursorAt = getViewPortSize(files)
+				fileCount = len(files)
+			}
 		}
 
 	}
