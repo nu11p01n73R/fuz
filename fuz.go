@@ -6,6 +6,7 @@ import (
 	"github.com/nu11p01n73R/walker"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 )
 
@@ -23,6 +24,7 @@ const (
 	TOGGLE    = iota
 	OPEN      = iota
 	BACKSPACE = iota
+	EXIT      = iota
 )
 
 const MAX_VIEWPORT_SIZE = 20
@@ -153,6 +155,8 @@ func keyHandler(key byte, mode int) int {
 			return DONWARD
 		case 107:
 			return UPWARD
+		case 113:
+			return EXIT
 		}
 	}
 
@@ -190,8 +194,16 @@ func viewPort(files []string) error {
 	mode := SEARCH
 	allFiles := files
 
-	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
-	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+	fileFlag := "-F"
+	if runtime.GOOS == "darwin" {
+		fileFlag = "-f"
+	}
+
+	exec.Command("stty", fileFlag, "/dev/tty", "cbreak", "min", "1").Run()
+	err = exec.Command("/bin/stty", fileFlag, "/dev/tty", "-echo").Run()
+	if err != nil {
+		return err
+	}
 
 	char := make([]byte, 1)
 
@@ -205,6 +217,8 @@ keyWait:
 		event := keyHandler(char[0], mode)
 
 		switch event {
+		case EXIT:
+			break keyWait
 		case UPWARD:
 			if cursorAt == 0 {
 				cursorAt = viewPortSize - 1
@@ -219,6 +233,7 @@ keyWait:
 			mode = toggleMode(mode)
 			break
 		case OPEN:
+			break keyWait
 			if cursorAt < fileCount {
 				err = openEditor(files[cursorAt])
 				break keyWait
@@ -242,8 +257,14 @@ keyWait:
 }
 
 func cleanUp() {
-	exec.Command("stty", "-F", "/dev/tty", "echo").Run()
 	fmt.Println()
+
+	fileFlag := "-F"
+	if runtime.GOOS == "darwin" {
+		fileFlag = "-f"
+	}
+
+	exec.Command("/bin/stty", fileFlag, "/dev/tty", "echo").Run()
 }
 
 // Handles any errors
