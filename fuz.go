@@ -55,6 +55,11 @@ func printHeader() {
 }
 
 func printList(files []string, cursorAt int, searchString string, mode int) {
+
+	if len(files) == 0 {
+		fmt.Println("  Oops!! No matches found.")
+	}
+
 	for i := 0; i < MAX_VIEWPORT_SIZE && i < len(files); i++ {
 		cursor := "  "
 		if cursorAt == i {
