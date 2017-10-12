@@ -44,8 +44,18 @@ func intialWalk(dir string) ([]string, error) {
 	}, []string{`\.git`, `.*\.sw.*`, `node_modules`, `vendor`})
 }
 
+func printHeader() {
+	logo := `
+	 / _|_   _ ____
+	| |_| | | |_  /
+	|  _| |_| |/ /
+	|_|  \__,_/___|
+	`
+	fmt.Println(logo)
+	fmt.Println("-----------------------------------")
+}
+
 func printList(files []string, cursorAt int, searchString string) {
-	fmt.Println()
 	for i := 0; i < MAX_VIEWPORT_SIZE && i < len(files); i++ {
 		cursor := " "
 		if cursorAt == i {
@@ -53,6 +63,7 @@ func printList(files []string, cursorAt int, searchString string) {
 		}
 		fmt.Printf("%s %s\n", cursor, files[i])
 	}
+	fmt.Println("-----------------------------------")
 	fmt.Printf(">> %s", searchString)
 }
 
@@ -210,6 +221,7 @@ func viewPort(files []string) error {
 keyWait:
 	for {
 		clearScreen()
+		printHeader()
 		printList(files, cursorAt, searchString)
 
 		os.Stdin.Read(char)
@@ -233,7 +245,6 @@ keyWait:
 			mode = toggleMode(mode)
 			break
 		case OPEN:
-			break keyWait
 			if cursorAt < fileCount {
 				err = openEditor(files[cursorAt])
 				break keyWait
