@@ -1,9 +1,16 @@
 
+# Fuz
+
+
 ```
 
-          __| |  |_  )
-          _|  │  │  / 
-        _|   ____│___|
+
+
+                                          __| |  |_  )
+                                          _|  │  │  / 
+                                        _|   ____│___|
+
+
 
 
 ```
@@ -12,6 +19,9 @@ Fuzzy search the current directory for files. `fuz` is a simple utility
 written in golang, which lists the files in the current directory.
 You can search through the filenames and open the file that you are 
 looking for with ease.
+
+
+<hr>
 
 <img src="screenshot.png" width="1153">
 
