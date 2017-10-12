@@ -41,7 +41,7 @@ func intialWalk(dir string) ([]string, error) {
 			files[i] = strings.TrimPrefix(file, prefix)
 		}
 		return files
-	})
+	}, []string{`\.git`, `.*\.sw.*`, `node_modules`, `vendor`})
 }
 
 func printList(files []string, cursorAt int, searchString string) {
