@@ -55,16 +55,22 @@ func printHeader() {
 	fmt.Println("-----------------------------------")
 }
 
-func printList(files []string, cursorAt int, searchString string) {
+func printList(files []string, cursorAt int, searchString string, mode int) {
 	for i := 0; i < MAX_VIEWPORT_SIZE && i < len(files); i++ {
-		cursor := " "
+		cursor := "  "
 		if cursorAt == i {
-			cursor = ">"
+			cursor = " >"
 		}
 		fmt.Printf("%s %s\n", cursor, files[i])
 	}
+
+	currentMode := "S"
+	if mode == NORMAL {
+		currentMode = "N"
+	}
+
 	fmt.Println("-----------------------------------")
-	fmt.Printf(">> %s", searchString)
+	fmt.Printf("[%s] %s", currentMode, searchString)
 }
 
 func clearScreen() {
@@ -222,7 +228,7 @@ keyWait:
 	for {
 		clearScreen()
 		printHeader()
-		printList(files, cursorAt, searchString)
+		printList(files, cursorAt, searchString, mode)
 
 		os.Stdin.Read(char)
 
