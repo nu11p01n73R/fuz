@@ -46,7 +46,7 @@ func intialWalk(dir string) ([]string, error) {
 
 func printHeader() {
 	logo := `
-	   __| │  │_  )
+	   __| |  |_  )
 	   _|  │  │  / 
   	 _|   ____│___|
 	`
