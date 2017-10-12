@@ -46,10 +46,9 @@ func intialWalk(dir string) ([]string, error) {
 
 func printHeader() {
 	logo := `
-	 / _|_   _ ____
-	| |_| | | |_  /
-	|  _| |_| |/ /
-	|_|  \__,_/___|
+	   __| │  │_  )
+	   _|  │  │  / 
+  	 _|   ____│___|
 	`
 	fmt.Println(logo)
 	fmt.Println("-----------------------------------")
