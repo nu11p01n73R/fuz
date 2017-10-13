@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+	"unicode"
 )
 
 // Fuz Modes
@@ -128,19 +129,21 @@ func normalMode(char string, files []string, size int, cursorAt *int) (bool, err
 }
 
 func contains(str, search string) bool {
-	var j int
-	for i := 0; i < len(search); i++ {
-		for ; j < len(str); j++ {
-			if str[j] == search[i] {
+	var found, j int
+	searchRune := []rune(search)
+	strRune := []rune(str)
+
+	for i := 0; i < len(searchRune); i++ {
+		for ; j < len(strRune); j++ {
+			if unicode.ToLower(searchRune[i]) ==
+				unicode.ToLower(strRune[j]) {
+				found++
 				break
 			}
 		}
-
-		if j == len(str) {
-			return false
-		}
 	}
-	return true
+
+	return found == len(searchRune)
 }
 
 func filterFiles(files []string, searchString string) []string {
