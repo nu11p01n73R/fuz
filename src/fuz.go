@@ -302,5 +302,6 @@ func Fuz(dir string, logo string, command *exec.Cmd) error {
 		return err
 	}
 
+	fmt.Println()
 	return nil
 }
