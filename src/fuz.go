@@ -1,4 +1,4 @@
-package main
+package fuz
 
 import (
 	"errors"
@@ -55,6 +55,7 @@ func printHeader() {
 	fmt.Println("-----------------------------------")
 }
 
+// Print the list of files with the cursor and search string.
 func printList(files []string, cursorAt int, searchString string, mode int) {
 
 	if len(files) == 0 {
@@ -78,6 +79,7 @@ func printList(files []string, cursorAt int, searchString string, mode int) {
 	fmt.Printf("[%s] %s", currentMode, searchString)
 }
 
+// Clears the screen
 func clearScreen() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
@@ -96,6 +98,7 @@ func openEditor(file string) error {
 	return cmd.Run()
 }
 
+// Toggle the modes between search and normal
 func toggleMode(curr int) int {
 	if curr == SEARCH {
 		return NORMAL
@@ -104,6 +107,8 @@ func toggleMode(curr int) int {
 	}
 }
 
+// Handles the key presses if mode is Normal
+// In normal mode, j, k keys are used to navigate
 func normalMode(char string, files []string, size int, cursorAt *int) (bool, error) {
 	var err error
 	var done bool
@@ -128,6 +133,10 @@ func normalMode(char string, files []string, size int, cursorAt *int) (bool, err
 	return done, err
 }
 
+// Checks if all the characters in search
+// is present in str in the same order.
+// If the search is present, returns true.
+// Else returns false.
 func contains(str, search string) bool {
 	var found, j int
 	searchRune := []rune(search)
@@ -146,9 +155,12 @@ func contains(str, search string) bool {
 	return found == len(searchRune)
 }
 
+// Filters the file array based on the input search string.
+// Returns filtered array, where the search string is
+// present in the file name.
 func filterFiles(files []string, searchString string) []string {
 	output := []string{}
-	for i := 0; i < len(files); i++ { //&& contains(files[i], searchString); i++ {
+	for i := 0; i < len(files); i++ {
 		if contains(files[i], searchString) {
 			output = append(output, files[i])
 		}
@@ -209,6 +221,14 @@ func getViewPortSize(files []string) (int, int) {
 	return size, size - 1
 }
 
+// Main wainting loop.
+// Sets up the viewport with files.
+// Waits for user input.
+// Based on the key press, the current mode
+// is changed. Further keypress actions depend
+// upon the mode.
+// Params
+// 	files, list of files to be displayed on startup.
 func viewPort(files []string) error {
 	var searchString string
 	var err error
@@ -280,6 +300,7 @@ keyWait:
 	return err
 }
 
+// Sets terminal echo on
 func cleanUp() {
 	fmt.Println()
 
@@ -300,7 +321,14 @@ func handleError(err error) {
 	}
 }
 
-func main() {
+// Entry point to fuz
+// Walks the current directory and print out a list
+// of files in viewport.
+// Starts up search mode for the user to type in the
+// search string.
+// The files in viewport are filtered based on the
+// search string.
+func Fuz() {
 	pwd, err := os.Getwd()
 	handleError(err)
 
