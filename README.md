@@ -27,7 +27,19 @@ looking for with ease.
 
 # Installation
 
-TBA
+Easiest way to install is using `go get` command,
+
+```
+$ go get github.com/nu11p01n73R/fuz
+```
+
+You can also clone the repo and do `go install`,
+
+```
+$ git clone https://github.com/nu11p01n73R/fuz.git
+$ cd fuz
+$ go install
+```
 
 # Usage
 
@@ -61,4 +73,9 @@ The current mode, will be displayed next to the search space,
 [N]     Normal Mode
 ```
 
+# Improvement
 
+- The search algorithm need to be improved to add scoring for the filterd files.
+The scoring needs to be calculated from how near the search string are in 
+the main string. The files have to be then displayed on order of the
+scores.
