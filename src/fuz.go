@@ -269,23 +269,12 @@ keyWait:
 
 // Sets terminal echo on
 func cleanUp() {
-	fmt.Println()
-
 	fileFlag := "-F"
 	if runtime.GOOS == "darwin" {
 		fileFlag = "-f"
 	}
 
 	exec.Command("/bin/stty", fileFlag, "/dev/tty", "echo").Run()
-}
-
-// Handles any errors
-func handleError(err error) {
-	if err != nil {
-		cleanUp()
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
 }
 
 // Entry point to fuz
@@ -300,12 +289,18 @@ func handleError(err error) {
 //	logo The header logo to be printed.
 //	command The command to be executed when selecting a
 //	file at cursor.
-func Fuz(dir string, logo string, command *exec.Cmd) {
+func Fuz(dir string, logo string, command *exec.Cmd) error {
+	defer cleanUp()
+
 	files, err := intialWalk(dir)
-	handleError(err)
+	if err != nil {
+		return err
+	}
 
 	err = viewPort(files, logo, command)
-	handleError(err)
+	if err != nil {
+		return err
+	}
 
-	cleanUp()
+	return nil
 }
