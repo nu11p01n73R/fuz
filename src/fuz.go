@@ -296,14 +296,12 @@ func handleError(err error) {
 // The files in viewport are filtered based on the
 // search string.
 // Args
+// 	dir The directory which has to be listed.
 //	logo The header logo to be printed.
 //	command The command to be executed when selecting a
 //	file at cursor.
-func Fuz(logo string, command *exec.Cmd) {
-	pwd, err := os.Getwd()
-	handleError(err)
-
-	files, err := intialWalk(pwd)
+func Fuz(dir string, logo string, command *exec.Cmd) {
+	files, err := intialWalk(dir)
 	handleError(err)
 
 	err = viewPort(files, logo, command)

@@ -8,6 +8,12 @@ import (
 )
 
 func main() {
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Cannot get the working directory")
+		os.Exit(1)
+	}
+
 	logo := `
 	   __| |  |_  )
 	   _|  │  │  /
@@ -21,5 +27,5 @@ func main() {
 	}
 	cmd := exec.Command(editor)
 
-	fuz.Fuz(logo, cmd)
+	fuz.Fuz(pwd, logo, cmd)
 }
