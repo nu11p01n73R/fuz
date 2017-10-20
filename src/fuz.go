@@ -1,7 +1,6 @@
 package fuz
 
 import (
-	"errors"
 	"fmt"
 	"github.com/nu11p01n73R/walker"
 	"os"
@@ -45,12 +44,7 @@ func intialWalk(dir string) ([]string, error) {
 	}, []string{`\.git`, `.*\.sw.*`, `node_modules`, `vendor`})
 }
 
-func printHeader() {
-	logo := `
-	   __| |  |_  )
-	   _|  │  │  / 
-  	 _|   ____│___|
-	`
+func printHeader(logo string) {
 	fmt.Println(logo)
 	fmt.Println("-----------------------------------")
 }
@@ -86,15 +80,11 @@ func clearScreen() {
 	cmd.Run()
 }
 
-func openEditor(file string) error {
-	editor := os.Getenv("EDITOR")
-	if len(editor) == 0 {
-		return errors.New("Cannot open the file because $EDITOR not set")
-	}
-
-	cmd := exec.Command(editor, file)
+func runCommand(cmd *exec.Cmd, file string) error {
+	cmd.Args = append(cmd.Args, file)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
+
 	return cmd.Run()
 }
 
@@ -105,32 +95,6 @@ func toggleMode(curr int) int {
 	} else {
 		return SEARCH
 	}
-}
-
-// Handles the key presses if mode is Normal
-// In normal mode, j, k keys are used to navigate
-func normalMode(char string, files []string, size int, cursorAt *int) (bool, error) {
-	var err error
-	var done bool
-
-	switch char {
-	case "j":
-		// pressing j
-		if *cursorAt == 0 {
-			*cursorAt = size - 1
-		} else {
-			*cursorAt--
-		}
-		break
-	case "k":
-		*cursorAt = (*cursorAt + 1) % size
-		break
-	case "o":
-		err = openEditor(files[*cursorAt])
-		done = true
-		break
-	}
-	return done, err
 }
 
 // Checks if all the characters in search
@@ -229,7 +193,7 @@ func getViewPortSize(files []string) (int, int) {
 // upon the mode.
 // Params
 // 	files, list of files to be displayed on startup.
-func viewPort(files []string) error {
+func viewPort(files []string, logo string, cmd *exec.Cmd) error {
 	var searchString string
 	var err error
 
@@ -254,7 +218,10 @@ func viewPort(files []string) error {
 keyWait:
 	for {
 		clearScreen()
-		printHeader()
+
+		if len(logo) > 0 {
+			printHeader(logo)
+		}
 		printList(files, cursorAt, searchString, mode)
 
 		os.Stdin.Read(char)
@@ -279,7 +246,7 @@ keyWait:
 			break
 		case OPEN:
 			if cursorAt < fileCount {
-				err = openEditor(files[cursorAt])
+				err = runCommand(cmd, files[cursorAt])
 				break keyWait
 			}
 		case SEARCH:
@@ -328,14 +295,18 @@ func handleError(err error) {
 // search string.
 // The files in viewport are filtered based on the
 // search string.
-func Fuz() {
+// Args
+//	logo The header logo to be printed.
+//	command The command to be executed when selecting a
+//	file at cursor.
+func Fuz(logo string, command *exec.Cmd) {
 	pwd, err := os.Getwd()
 	handleError(err)
 
 	files, err := intialWalk(pwd)
 	handleError(err)
 
-	err = viewPort(files)
+	err = viewPort(files, logo, command)
 	handleError(err)
 
 	cleanUp()
