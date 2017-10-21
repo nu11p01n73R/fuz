@@ -192,8 +192,12 @@ func getViewPortSize(files []string) (int, int) {
 // is changed. Further keypress actions depend
 // upon the mode.
 // Params
+// 	base, The root directory where the files are listed from
 // 	files, list of files to be displayed on startup.
-func viewPort(files []string, logo string, cmd *exec.Cmd) error {
+//	logo, The logo to be displayed. No header will be displayed
+//		if the string is empty.
+//	cmd,  Command to be executed when the file is selected.
+func viewPort(base string, files []string, logo string, cmd *exec.Cmd) error {
 	var searchString string
 	var err error
 
@@ -246,7 +250,9 @@ keyWait:
 			break
 		case OPEN:
 			if cursorAt < fileCount {
-				err = runCommand(cmd, files[cursorAt])
+				filePath := fmt.Sprintf(
+					"%s/%s", base, files[cursorAt])
+				err = runCommand(cmd, filePath)
 				break keyWait
 			}
 		case SEARCH:
@@ -297,7 +303,7 @@ func Fuz(dir string, logo string, command *exec.Cmd) error {
 		return err
 	}
 
-	err = viewPort(files, logo, command)
+	err = viewPort(dir, files, logo, command)
 	if err != nil {
 		return err
 	}
