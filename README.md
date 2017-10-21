@@ -73,6 +73,27 @@ The current mode, will be displayed next to the search space,
 [N]     Normal Mode
 ```
 
+# Usage as package
+
+The `fuz` is packaged for easy use in any other packages that you write.
+For usage import the `src` folder as
+
+```
+import "github.com/nu11p01n73R/fuz/src
+```
+
+All the functionalities are wrapped into `Fuz`, which can be used as
+
+```
+fuz.Fuz(directory, logo, command)
+```
+
+Where,
+- `directory` The root directory where the files has to be listed.
+- `logo` The header logo to be printed. No header will be printed if 
+the logo is empty
+- `command` The command to be excecuted, when the file is opened.
+
 # Improvement
 
 - The search algorithm need to be improved to add scoring for the filterd files.
